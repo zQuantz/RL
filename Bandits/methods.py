@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 ## Consts
-N_ITER = 1_000_000
+N_ITER = 10_000
 N_ARMS = 10
 
 LR = 0.01 ## Large value benefits greedy. Learns the greedy quickly and anchors.
@@ -47,11 +47,12 @@ def gradient_pick(preferences, counts, t):
     return np.random.choice(np.arange(N_ARMS), p=p)
 
 def gradient_update(action, reward, preferences, counts, t):
+    counts[0] += reward
     p = np.exp(preferences) / np.exp(preferences).sum()
-    preferences[action] = preferences[action] + LR * (reward - preferences[action]) * (1 - p[action])
+    preferences[action] = preferences[action] + LR * (reward - counts[0] / t) * (1 - p[action])
     include = np.ones(N_ARMS)
     include[action] = 0
-    preferences = preferences - LR * (reward - preferences) * p * include
+    preferences = preferences - LR * (reward - counts[0] / t) * p * include
 
 def train_agent(pick_fn, update_fn):
 
